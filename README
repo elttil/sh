@@ -1,0 +1,2 @@
+WIP shell program, currently only parses and is able to
+execute ('&&', '||') and pipes '|'.
