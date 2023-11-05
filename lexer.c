@@ -48,6 +48,18 @@ int parse_operand(const char **code_ptr, struct TOKEN *cur) {
     code += 2;
     goto complete_return;
   }
+  if (0 == strncmp(code, ">>", 2)) {
+    cur->type = TOKEN_STREAM_APPEND;
+    strcpy(cur->string_rep, ">>");
+    code += 2;
+    goto complete_return;
+  }
+  if (0 == strncmp(code, ">", 1)) {
+    cur->type = TOKEN_STREAM;
+    strcpy(cur->string_rep, ">");
+    code++;
+    goto complete_return;
+  }
   if (0 == strncmp(code, "|", 1)) {
     cur->type = TOKEN_PIPE;
     strcpy(cur->string_rep, "|");
@@ -85,6 +97,7 @@ struct TOKEN *lex(const char *code) {
     if (parse_alphastring(&code, cur)) {
     } else if (parse_operand(&code, cur)) {
     } else {
+      printf("at: %s\n", code);
       assert(0 && "Unknown token");
     }
     prev = cur;

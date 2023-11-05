@@ -7,7 +7,9 @@ typedef enum {
   TOKEN_AND,
   TOKEN_NOT,
   TOKEN_NOOP,
-  TOKEN_PIPE
+  TOKEN_PIPE,
+  TOKEN_STREAM,
+  TOKEN_STREAM_APPEND,
 } token_type_t;
 
 struct TOKEN {

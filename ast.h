@@ -23,6 +23,9 @@ struct AST {
   struct AST_VALUE val;
   struct AST *children;
   struct AST *pipe_rhs; // in "func1 | func2" func2 is the piped rhs
+  int file_out_fd_to_use;
+  int file_out_append;
+  const char *file_out; // in "func1 > file.txt" file.txt is the file_out
   struct AST *next;
 };
 

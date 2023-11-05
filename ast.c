@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 void free_ast_command(struct AST *ast) {
   free_ast(ast->children);
@@ -42,7 +43,7 @@ int parse_command(struct TOKEN **token_ptr, struct AST *cur) {
       child->val.string = token->string_rep;
       if (!token->next)
         break;
-      if (token->next->type != TOKEN_ALPHA)
+      if (TOKEN_ALPHA != token->next->type)
         break;
       token = token->next;
       child->next = allocate_ast();
@@ -50,6 +51,16 @@ int parse_command(struct TOKEN **token_ptr, struct AST *cur) {
     }
   }
   token = token->next;
+  // Parse the stream modifier "prog > file.txt"
+  if (token &&
+      (TOKEN_STREAM == token->type || TOKEN_STREAM_APPEND == token->type)) {
+    cur->file_out_append = (TOKEN_STREAM_APPEND == token->type);
+    // TODO: Allow it to be modified
+    cur->file_out_fd_to_use = STDOUT_FILENO;
+    token = token->next;
+    cur->file_out = token->string_rep;
+    token = token->next;
+  }
   // Parse pipe '|'
   if (token && TOKEN_PIPE == token->type) {
     cur->pipe_rhs = allocate_ast();

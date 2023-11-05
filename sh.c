@@ -1,4 +1,5 @@
 #include <ast.h>
+#include <fcntl.h>
 #include <lexer.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,6 +20,15 @@ int execute_command(struct AST *ast, int input_fd) {
   int in = input_fd;
   int out = STDOUT_FILENO;
   int slave_input = -1;
+
+  int file_out_fd;
+  if (ast->file_out) {
+    file_out_fd =
+        open(ast->file_out,
+             O_WRONLY | O_CREAT | ((ast->file_out_append) ? O_APPEND : O_TRUNC),
+             0666);
+  }
+
   if (ast->pipe_rhs) {
     int fds[2];
     pipe(fds);
@@ -32,9 +42,12 @@ int execute_command(struct AST *ast, int input_fd) {
       close(slave_input);
     dup2(in, STDIN_FILENO);
     dup2(out, STDOUT_FILENO);
+    dup2(file_out_fd, ast->file_out_fd_to_use);
+
     execvp(program, argv);
     exit(1);
   }
+  close(file_out_fd);
 
   if (ast->pipe_rhs) {
     if (out >= 0)
