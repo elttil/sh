@@ -36,41 +36,20 @@ int parse_alphastring(const char **code_ptr, struct TOKEN *cur) {
 // Is operands the right word?
 int parse_operand(const char **code_ptr, struct TOKEN *cur) {
   const char *code = *code_ptr;
-  if (0 == strncmp(code, "&&", 2)) {
-    cur->type = TOKEN_AND;
-    strcpy(cur->string_rep, "&&");
-    code += 2;
-    goto complete_return;
+#define TRY_PARSE_STRING(_s, _token)                                           \
+  if (0 == strncmp(code, _s, strlen(_s))) {                                    \
+    cur->type = _token;                                                        \
+    strcpy(cur->string_rep, _s);                                               \
+    code += strlen(_s);                                                        \
+    goto complete_return;                                                      \
   }
-  if (0 == strncmp(code, "||", 2)) {
-    cur->type = TOKEN_NOT;
-    strcpy(cur->string_rep, "||");
-    code += 2;
-    goto complete_return;
-  }
-  if (0 == strncmp(code, ">>", 2)) {
-    cur->type = TOKEN_STREAM_APPEND;
-    strcpy(cur->string_rep, ">>");
-    code += 2;
-    goto complete_return;
-  }
-  if (0 == strncmp(code, ">", 1)) {
-    cur->type = TOKEN_STREAM;
-    strcpy(cur->string_rep, ">");
-    code++;
-    goto complete_return;
-  }
-  if (0 == strncmp(code, "|", 1)) {
-    cur->type = TOKEN_PIPE;
-    strcpy(cur->string_rep, "|");
-    code++;
-    goto complete_return;
-  }
-  if (0 == strncmp(code, "&", 1)) {
-    assert(0 && "TODO");
-    code++;
-    goto complete_return;
-  }
+  TRY_PARSE_STRING("&&", TOKEN_AND);
+  TRY_PARSE_STRING("||", TOKEN_NOT);
+  TRY_PARSE_STRING(">>", TOKEN_STREAM_APPEND);
+  TRY_PARSE_STRING(">", TOKEN_STREAM);
+  TRY_PARSE_STRING("|", TOKEN_PIPE);
+  // TODO: &
+
   // Failed to parse
   return 0;
 
