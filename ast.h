@@ -1,3 +1,5 @@
+#ifndef AST_H
+#define AST_H
 #include <lexer.h>
 
 typedef enum {
@@ -31,3 +33,4 @@ struct AST {
 
 void free_ast(struct AST *ast);
 struct AST *generate_ast(struct TOKEN *token);
+#endif // AST_H

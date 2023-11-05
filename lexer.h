@@ -21,4 +21,4 @@ struct TOKEN {
 struct TOKEN *lex(const char *code);
 struct AST *generate_ast(struct TOKEN *token);
 void free_tokens(struct TOKEN *token);
-#endif
+#endif // LEXER_H
