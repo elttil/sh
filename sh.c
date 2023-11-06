@@ -3,7 +3,9 @@
 #include <lexer.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/wait.h>
+#include <test.h>
 #include <unistd.h>
 
 int execute_command(struct AST *ast, int input_fd) {
@@ -64,29 +66,45 @@ void execute_ast(struct AST *ast) {
   for (; ast;) {
     if (AST_COMMAND == ast->type) {
       rc = execute_command(ast, STDIN_FILENO);
-      ast = ast->next;
-      continue;
     } else if (AST_CONDITIONAL_AND == ast->type) {
-      if (rc != 0) {
+      if (0 != rc) {
         ast = ast->next;
         if (!ast)
           break;
       }
-      ast = ast->next;
-      continue;
     } else if (AST_CONDITIONAL_NOT == ast->type) {
-      if (rc == 0) {
+      if (0 == rc) {
         ast = ast->next;
         if (!ast)
           break;
       }
-      ast = ast->next;
-      continue;
     }
+    ast = ast->next;
   }
 }
 
-int main(void) {
+int main(int argc, char **argv) {
+  if (argc >= 1) {
+    char *p = argv[0];
+    for (; *p; p++)
+      ;
+    p--;
+    for (; *p && *p != '/'; p--)
+      ;
+    if (!*p)
+      return 1;
+    p++;
+    if (0 == strcmp("shelltest", p)) {
+      printf("Running internal shell test\n");
+      if (internal_shelltest()) {
+        printf("Success\n");
+        return 0;
+      }
+      printf("Failed\n");
+      return 1;
+    }
+  }
+
   struct TOKEN *h = lex("echo test | cat");
   struct AST *ast_h = generate_ast(h);
   execute_ast(ast_h);

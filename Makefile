@@ -1,6 +1,6 @@
 CFLAGS=-g -Wall -Wextra -pedantic -Werror
 INCLUDE=-I.
-OBJ=sh.o lexer.o ast.o
+OBJ=sh.o lexer.o ast.o test.o
 
 all: sh
 
@@ -10,5 +10,9 @@ all: sh
 sh: $(OBJ)
 	$(CC) $^ -o $@
 
+internaltest: sh
+	ln -sf sh shelltest
+	./shelltest
+
 clean:
-	rm sh $(OBJ)
+	rm shelltest sh $(OBJ)
