@@ -44,12 +44,14 @@ int execute_command(struct AST *ast, int input_fd) {
       close(slave_input);
     dup2(in, STDIN_FILENO);
     dup2(out, STDOUT_FILENO);
-    dup2(file_out_fd, ast->file_out_fd_to_use);
+    if (ast->file_out)
+      dup2(file_out_fd, ast->file_out_fd_to_use);
 
     execvp(program, argv);
     exit(1);
   }
-  close(file_out_fd);
+  if (ast->file_out)
+    close(file_out_fd);
 
   if (ast->pipe_rhs) {
     if (out >= 0)
