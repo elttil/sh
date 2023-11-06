@@ -1,14 +1,19 @@
 #include <lexer.h>
+#include <stdio.h>
 
 int internal_shelltest(void) {
 #define TOKEN_MATCH(_t)                                                        \
   {                                                                            \
-    if (_t != token->type)                                                     \
+    if (_t != token->type) {                                                   \
+      fprintf(stderr, "Test failed at check: %d\n", i);                        \
       return 0;                                                                \
+    }                                                                          \
     token = token->next;                                                       \
+    i++;                                                                       \
   }
   struct TOKEN *token =
       lex("echo test>>testfile||echo foo > testfile | echo bar > zoo");
+  int i = 0;
   struct TOKEN *head = token;
   TOKEN_MATCH(TOKEN_CHARS);         // echo
   TOKEN_MATCH(TOKEN_CHARS);         // test
