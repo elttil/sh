@@ -75,10 +75,12 @@ int parse_command(struct TOKEN **token_ptr, struct AST *cur) {
 }
 
 struct AST *generate_ast(struct TOKEN *token) {
-  struct AST *head = allocate_ast();
-  struct AST *cur = head;
+  struct AST *head = NULL;
   struct AST *prev = NULL;
   for (; token;) {
+    struct AST *cur = allocate_ast();
+    if (prev)
+      prev->next = cur;
     if (parse_command(&token, cur)) {
     } else if (TOKEN_AND == token->type) {
       cur->type = AST_CONDITIONAL_AND;
@@ -89,11 +91,9 @@ struct AST *generate_ast(struct TOKEN *token) {
     } else {
       token = token->next;
     }
+    if (!head)
+      head = cur;
     prev = cur;
-    cur->next = allocate_ast();
-    cur = cur->next;
   }
-  free(prev->next);
-  prev->next = NULL;
   return head;
 }

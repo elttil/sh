@@ -76,28 +76,26 @@ void skip_whitespace(const char **code_ptr) {
 }
 
 struct TOKEN *lex(const char *code) {
-  struct TOKEN *head = malloc(sizeof(struct TOKEN));
-  struct TOKEN *cur = head;
+  struct TOKEN *head = NULL;
   struct TOKEN *prev = NULL;
-  cur->next = NULL;
-  cur->type = TOKEN_NOOP;
   for (; *code;) {
     skip_whitespace(&code);
+    if (!*code)
+      break;
+    struct TOKEN *cur = malloc(sizeof(struct TOKEN));
+    cur->next = NULL;
+    if (prev)
+      prev->next = cur;
     if (parse_chars(&code, cur)) {
     } else if (parse_operand(&code, cur)) {
     } else {
-      if (!*code)
-        break;
+      free(cur);
       printf("at: %s\n", code);
       assert(0 && "Unknown token");
     }
+    if (!head)
+      head = cur;
     prev = cur;
-    cur->next = malloc(sizeof(struct TOKEN));
-    cur = cur->next;
-    cur->type = TOKEN_NOOP;
-    cur->next = NULL;
   }
-  free(prev->next);
-  prev->next = NULL;
   return head;
 }
