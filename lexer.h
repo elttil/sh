@@ -3,7 +3,7 @@
 #include <stddef.h>
 
 typedef enum {
-  TOKEN_ALPHA,
+  TOKEN_CHARS,
   TOKEN_AND,
   TOKEN_NOT,
   TOKEN_NOOP,

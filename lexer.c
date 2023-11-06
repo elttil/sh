@@ -14,14 +14,24 @@ void free_tokens(struct TOKEN *token) {
   }
 }
 
-int parse_alphastring(const char **code_ptr, struct TOKEN *cur) {
-  const char *code = *code_ptr;
-  if (!isalpha(*code))
+int is_nonspecial_char(char c) {
+  if (!isprint(c))
     return 0;
-  cur->type = TOKEN_ALPHA;
+  if (isspace(c))
+    return 0;
+  if (isalnum(c))
+    return 1;
+  return ('>' != c && '|' != c && '&' != c);
+}
+
+int parse_chars(const char **code_ptr, struct TOKEN *cur) {
+  const char *code = *code_ptr;
+  if (!is_nonspecial_char(*code))
+    return 0;
+  cur->type = TOKEN_CHARS;
   int i = 0;
   for (; *code; code++, i++) {
-    if (!isalpha(*code)) {
+    if (!is_nonspecial_char(*code)) {
       break;
     }
     assert(i < 256);
@@ -73,9 +83,11 @@ struct TOKEN *lex(const char *code) {
   cur->type = TOKEN_NOOP;
   for (; *code;) {
     skip_whitespace(&code);
-    if (parse_alphastring(&code, cur)) {
+    if (parse_chars(&code, cur)) {
     } else if (parse_operand(&code, cur)) {
     } else {
+      if (!*code)
+        break;
       printf("at: %s\n", code);
       assert(0 && "Unknown token");
     }

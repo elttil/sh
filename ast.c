@@ -27,13 +27,13 @@ struct AST *allocate_ast(void) {
 
 int parse_command(struct TOKEN **token_ptr, struct AST *cur) {
   struct TOKEN *token = *token_ptr;
-  if (TOKEN_ALPHA != token->type)
+  if (TOKEN_CHARS != token->type)
     return 0;
   cur->type = AST_COMMAND;
   cur->val.type = AST_VALUE_STRING;
   cur->val.string = token->string_rep;
   // Parse the arguments
-  if (token->next && TOKEN_ALPHA == token->next->type) {
+  if (token->next && TOKEN_CHARS == token->next->type) {
     token = token->next;
     cur->children = allocate_ast();
     struct AST *child = cur->children;
@@ -43,7 +43,7 @@ int parse_command(struct TOKEN **token_ptr, struct AST *cur) {
       child->val.string = token->string_rep;
       if (!token->next)
         break;
-      if (TOKEN_ALPHA != token->next->type)
+      if (TOKEN_CHARS != token->next->type)
         break;
       token = token->next;
       child->next = allocate_ast();
