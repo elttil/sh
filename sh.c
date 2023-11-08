@@ -8,7 +8,9 @@
 #include <test.h>
 #include <unistd.h>
 
-int execute_command(struct AST *ast, int input_fd) {
+int execute_command(struct AST *ast, int input_fd);
+
+int execute_binary(struct AST *ast, int input_fd) {
   char *program = ast->val.string;
   struct AST *child = ast->children;
   char *argv[100];
@@ -61,6 +63,25 @@ int execute_command(struct AST *ast, int input_fd) {
   int rc;
   waitpid(pid, &rc, 0);
   return rc;
+}
+
+int execute_command(struct AST *ast, int input_fd) {
+  char *program = ast->val.string;
+  if (0 == strcmp(program, "cd")) {
+    struct AST *child = ast->children;
+    char *directory;
+    if (!child)
+      directory = "~";
+    else
+      directory = child->val.string;
+    int rc = chdir(directory);
+    if (-1 == rc) {
+      perror("cd");
+      return 1;
+    }
+    return 0;
+  }
+  return execute_binary(ast, input_fd);
 }
 
 void execute_ast(struct AST *ast) {
