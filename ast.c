@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <ast.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -74,6 +75,27 @@ int parse_command(struct TOKEN **token_ptr, struct AST *cur) {
   return 1;
 }
 
+int tokens_to_ast(struct TOKEN **token_ptr, struct AST *cur) {
+  struct TOKEN *token = *token_ptr;
+  if (parse_command(&token, cur)) {
+    goto tokens_to_ast_success;
+  }
+  if (TOKEN_AND == token->type) {
+    cur->type = AST_CONDITIONAL_AND;
+    token = token->next;
+    goto tokens_to_ast_success;
+  }
+  if (TOKEN_NOT == token->type) {
+    cur->type = AST_CONDITIONAL_NOT;
+    token = token->next;
+    goto tokens_to_ast_success;
+  }
+  return 0;
+tokens_to_ast_success:
+  *token_ptr = token;
+  return 1;
+}
+
 struct AST *generate_ast(struct TOKEN *token) {
   struct AST *head = NULL;
   struct AST *prev = NULL;
@@ -81,15 +103,8 @@ struct AST *generate_ast(struct TOKEN *token) {
     struct AST *cur = allocate_ast();
     if (prev)
       prev->next = cur;
-    if (parse_command(&token, cur)) {
-    } else if (TOKEN_AND == token->type) {
-      cur->type = AST_CONDITIONAL_AND;
-      token = token->next;
-    } else if (TOKEN_NOT == token->type) {
-      cur->type = AST_CONDITIONAL_NOT;
-      token = token->next;
-    } else {
-      token = token->next;
+    if (!tokens_to_ast(&token, cur)) {
+      assert(0 && "Unexpected token");
     }
     if (!head)
       head = cur;
