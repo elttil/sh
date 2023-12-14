@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
+#include <util.h>
 
 void free_tokens(struct TOKEN *token) {
   for (; token;) {
@@ -92,7 +93,7 @@ struct TOKEN *lex(const char *code) {
     skip_whitespace(&code);
     if (!*code)
       break;
-    struct TOKEN *cur = malloc(sizeof(struct TOKEN));
+    struct TOKEN *cur = xzmalloc(sizeof(struct TOKEN));
     cur->next = NULL;
     if (prev)
       prev->next = cur;

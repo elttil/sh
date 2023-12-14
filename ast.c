@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <util.h>
 
 void free_ast_command(struct AST *ast) {
   free_ast(ast->children);
@@ -21,9 +22,7 @@ void free_ast(struct AST *ast) {
 }
 
 struct AST *allocate_ast(void) {
-  struct AST *r = malloc(sizeof(struct AST));
-  memset(r, 0, sizeof(struct AST));
-  return r;
+  return xzmalloc(sizeof(struct AST));
 }
 
 int parse_command(struct TOKEN **token_ptr, struct AST *cur) {

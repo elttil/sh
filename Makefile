@@ -1,6 +1,6 @@
 CFLAGS=-g -Wall -Wextra -pedantic -Werror
 INCLUDE=-I.
-OBJ=sh.o lexer.o ast.o test.o
+OBJ=sh.o lexer.o ast.o test.o util.o
 
 all: sh
 
