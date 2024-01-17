@@ -171,6 +171,15 @@ int tokens_to_ast(struct TOKEN **token_ptr, struct AST *cur) {
     token = token->next;
     goto tokens_to_ast_success;
   }
+  // Semicolon and newlines are treated as a conditional such as && and
+  // || except that it does not care about the return value. This means
+  // it can use the same logic of seperating commands that && and ||
+  // does.
+  if (TOKEN_SEMICOLON == token->type || TOKEN_NEWLINE == token->type) {
+    cur->type = AST_NOOP;
+    token = token->next;
+    goto tokens_to_ast_success;
+  }
   return 0;
 tokens_to_ast_success:
   *token_ptr = token;

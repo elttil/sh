@@ -19,6 +19,7 @@ typedef enum {
   AST_IF_STATEMENT,
   AST_CONDITIONAL_AND,
   AST_CONDITIONAL_NOT,
+  AST_NOOP,
 } ast_type_t;
 
 struct AST {

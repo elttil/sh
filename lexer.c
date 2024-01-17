@@ -25,7 +25,8 @@ int is_nonspecial_char(char c) {
   if (isalnum(c)) {
     return 1;
   }
-  return ('>' != c && '|' != c && '&' != c && '(' != c && ')' != c && '{' != c && '}' != c);
+  return ('>' != c && '|' != c && '&' != c && ';' != c && '(' != c &&
+          ')' != c && '{' != c && '}' != c);
 }
 
 int parse_chars(const char **code_ptr, struct TOKEN *cur) {
@@ -60,6 +61,8 @@ int parse_operand(const char **code_ptr, struct TOKEN *cur) {
   }
   TRY_PARSE_STRING("&&", TOKEN_AND);
   TRY_PARSE_STRING("||", TOKEN_NOT);
+  TRY_PARSE_STRING(";", TOKEN_SEMICOLON);
+  TRY_PARSE_STRING("\n", TOKEN_NEWLINE);
   TRY_PARSE_STRING(">>", TOKEN_STREAM_APPEND);
   TRY_PARSE_STRING(">", TOKEN_STREAM);
   TRY_PARSE_STRING("|", TOKEN_PIPE);
@@ -79,7 +82,7 @@ complete_return:
 
 void skip_whitespace(const char **code_ptr) {
   const char *code = *code_ptr;
-  for (; isspace(*code); code++) {
+  for (; isspace(*code) && '\n' != *code; code++) {
     ;
   }
   *code_ptr = code;
