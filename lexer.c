@@ -16,19 +16,23 @@ void free_tokens(struct TOKEN *token) {
 }
 
 int is_nonspecial_char(char c) {
-  if (!isprint(c))
+  if (!isprint(c)) {
     return 0;
-  if (isspace(c))
+  }
+  if (isspace(c)) {
     return 0;
-  if (isalnum(c))
+  }
+  if (isalnum(c)) {
     return 1;
+  }
   return ('>' != c && '|' != c && '&' != c);
 }
 
 int parse_chars(const char **code_ptr, struct TOKEN *cur) {
   const char *code = *code_ptr;
-  if (!is_nonspecial_char(*code))
+  if (!is_nonspecial_char(*code)) {
     return 0;
+  }
   cur->type = TOKEN_CHARS;
   int i = 0;
   for (; *code; code++, i++) {
@@ -71,8 +75,9 @@ complete_return:
 
 void skip_whitespace(const char **code_ptr) {
   const char *code = *code_ptr;
-  for (; isspace(*code); code++)
+  for (; isspace(*code); code++) {
     ;
+  }
   *code_ptr = code;
 }
 
@@ -91,19 +96,22 @@ struct TOKEN *lex(const char *code) {
   struct TOKEN *prev = NULL;
   for (; *code;) {
     skip_whitespace(&code);
-    if (!*code)
+    if (!*code) {
       break;
+    }
     struct TOKEN *cur = xzmalloc(sizeof(struct TOKEN));
     cur->next = NULL;
-    if (prev)
+    if (prev) {
       prev->next = cur;
+    }
     if (!chars_to_token(&code, cur)) {
       free(cur);
       printf("at: %s\n", code);
       assert(0 && "Unknown token");
     }
-    if (!head)
+    if (!head) {
       head = cur;
+    }
     prev = cur;
   }
   return head;
