@@ -87,7 +87,12 @@ int execute_command(struct AST *ast, int input_fd) {
 void execute_ast(struct AST *ast) {
   int rc = -1;
   for (; ast;) {
-    if (AST_COMMAND == ast->type) {
+    if (AST_IF_STATEMENT == ast->type) {
+      int cond_rc = execute_command(ast->condition, STDIN_FILENO);
+      if (0 == cond_rc) {
+        execute_ast(ast->children);
+      }
+    } else if (AST_COMMAND == ast->type) {
       rc = execute_command(ast, STDIN_FILENO);
     } else if (AST_CONDITIONAL_AND == ast->type) {
       if (0 != rc) {

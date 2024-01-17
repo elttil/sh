@@ -6,6 +6,8 @@
 #include <unistd.h>
 #include <util.h>
 
+int tokens_to_ast(struct TOKEN **token_ptr, struct AST *cur);
+
 void free_ast_command(struct AST *ast) {
   free_ast(ast->children);
   free_ast(ast->pipe_rhs);
@@ -78,8 +80,84 @@ int parse_command(struct TOKEN **token_ptr, struct AST *cur) {
   return 1;
 }
 
+#define EXPECT_TOKEN(_tok)                                                     \
+  {                                                                            \
+    fprintf(stderr, "Expected %s\n", _tok);                                    \
+    exit(1);                                                                   \
+  }
+
+int parse_if_statement(struct TOKEN **token_ptr, struct AST *cur) {
+  struct TOKEN *token = *token_ptr;
+  if (TOKEN_CHARS != token->type) {
+    return 0;
+  }
+  if (0 != strcmp("if", token->string_rep)) {
+    return 0;
+  }
+
+  cur->type = AST_IF_STATEMENT;
+
+  token = token->next;
+  if (!token || TOKEN_OPEN_PAREN != token->type) {
+    EXPECT_TOKEN("(");
+  }
+  token = token->next;
+
+  cur->condition = allocate_ast();
+  int rc = tokens_to_ast(&token, cur->condition);
+  if (!rc) {
+    fprintf(stderr, "Failed to parse condition in 'if' statement.\n");
+    exit(1);
+  }
+
+  if (!token || TOKEN_CLOSE_PAREN != token->type) {
+    EXPECT_TOKEN(")");
+  }
+  token = token->next;
+  if (!token || TOKEN_OPEN_BRACKET != token->type) {
+    EXPECT_TOKEN("{");
+  }
+  token = token->next;
+
+  cur->children = NULL;
+  struct AST *previous = NULL;
+  // Loop until closing bracket
+  for (;;) {
+
+    if (!token) {
+      fprintf(stderr, "Expected } before end of expression.\n");
+      exit(1);
+    }
+
+    if (TOKEN_CLOSE_BRACKET == token->type) {
+      token = token->next;
+      break;
+    }
+
+    struct AST *a = allocate_ast();
+    int rc = tokens_to_ast(&token, a);
+    if (!rc) {
+      fprintf(stderr, "Expected } before end of expression.\n");
+      exit(1);
+    }
+
+    if (NULL == previous) {
+      cur->children = a;
+    } else {
+      previous->next = a;
+    }
+    previous = a;
+  }
+
+  *token_ptr = token;
+  return 1;
+}
+
 int tokens_to_ast(struct TOKEN **token_ptr, struct AST *cur) {
   struct TOKEN *token = *token_ptr;
+  if (parse_if_statement(&token, cur)) {
+    goto tokens_to_ast_success;
+  }
   if (parse_command(&token, cur)) {
     goto tokens_to_ast_success;
   }

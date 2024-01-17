@@ -25,7 +25,7 @@ int is_nonspecial_char(char c) {
   if (isalnum(c)) {
     return 1;
   }
-  return ('>' != c && '|' != c && '&' != c);
+  return ('>' != c && '|' != c && '&' != c && '(' != c && ')' != c && '{' != c && '}' != c);
 }
 
 int parse_chars(const char **code_ptr, struct TOKEN *cur) {
@@ -63,6 +63,10 @@ int parse_operand(const char **code_ptr, struct TOKEN *cur) {
   TRY_PARSE_STRING(">>", TOKEN_STREAM_APPEND);
   TRY_PARSE_STRING(">", TOKEN_STREAM);
   TRY_PARSE_STRING("|", TOKEN_PIPE);
+  TRY_PARSE_STRING("(", TOKEN_OPEN_PAREN);
+  TRY_PARSE_STRING(")", TOKEN_CLOSE_PAREN);
+  TRY_PARSE_STRING("{", TOKEN_OPEN_BRACKET);
+  TRY_PARSE_STRING("}", TOKEN_CLOSE_BRACKET);
   // TODO: &
 
   // Failed to parse

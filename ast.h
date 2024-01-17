@@ -16,6 +16,7 @@ struct AST_VALUE {
 typedef enum {
   AST_COMMAND,
   AST_EXPRESSION,
+  AST_IF_STATEMENT,
   AST_CONDITIONAL_AND,
   AST_CONDITIONAL_NOT,
 } ast_type_t;
@@ -24,6 +25,7 @@ struct AST {
   ast_type_t type;
   struct AST_VALUE val;
   struct AST *children;
+  struct AST *condition;
   struct AST *pipe_rhs; // in "func1 | func2" func2 is the piped rhs
   int file_out_fd_to_use;
   int file_out_append;
