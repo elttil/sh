@@ -28,6 +28,25 @@ struct AST *allocate_ast(void) {
   return xzmalloc(sizeof(struct AST));
 }
 
+int parse_environment_variable(struct TOKEN **token_ptr, struct AST *cur) {
+  struct TOKEN *token = *token_ptr;
+  if (TOKEN_DOLLAR != token->type) {
+    return 0;
+  }
+  token = token_next(token);
+  if (!token || TOKEN_CHARS != token->type) {
+    return 0;
+  }
+
+  cur->type = AST_ENVIRONMENT_VARIABLE;
+  cur->val.type = AST_VALUE_STRING;
+  cur->val.string = token->string_rep;
+
+  token = token_next_nonewhite(token);
+  *token_ptr = token;
+  return 1;
+}
+
 int parse_command(struct TOKEN **token_ptr, struct AST *cur) {
   struct TOKEN *token = *token_ptr;
   if (TOKEN_CHARS != token->type) {
@@ -36,27 +55,35 @@ int parse_command(struct TOKEN **token_ptr, struct AST *cur) {
   cur->type = AST_COMMAND;
   cur->val.type = AST_VALUE_STRING;
   cur->val.string = token->string_rep;
+
   // Parse the arguments
-  if (token_next_nonewhite(token) && TOKEN_CHARS == token_next_nonewhite(token)->type) {
+  const struct TOKEN *const first_argument = token_next_nonewhite(token);
+  if (first_argument && (TOKEN_CHARS == first_argument->type ||
+                         TOKEN_DOLLAR == first_argument->type)) {
     token = token_next_nonewhite(token);
     cur->children = allocate_ast();
     struct AST *child = cur->children;
     for (;;) {
-      child->type = AST_EXPRESSION;
-      child->val.type = AST_VALUE_STRING;
-      child->val.string = token->string_rep;
-      if (!token_next_nonewhite(token)) {
+      if (parse_environment_variable(&token, child)) {
+      } else {
+        child->type = AST_EXPRESSION;
+        child->val.type = AST_VALUE_STRING;
+        child->val.string = token->string_rep;
+        token = token_next_nonewhite(token);
+      }
+
+      if (!token) {
         break;
       }
-      if (TOKEN_CHARS != token_next_nonewhite(token)->type) {
+      if (TOKEN_CHARS != token->type) {
         break;
       }
-      token = token_next_nonewhite(token);
       child->next = allocate_ast();
       child = child->next;
     }
+  } else {
+    token = token_next_nonewhite(token);
   }
-  token = token_next_nonewhite(token);
   // Parse the stream modifier "prog > file.txt"
   if (token &&
       (TOKEN_STREAM == token->type || TOKEN_STREAM_APPEND == token->type)) {

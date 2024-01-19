@@ -11,6 +11,7 @@ typedef enum {
   TOKEN_PIPE,
   TOKEN_SEMICOLON,
   TOKEN_NEWLINE,
+  TOKEN_DOLLAR,
   TOKEN_STREAM,
   TOKEN_STREAM_APPEND,
   TOKEN_OPEN_PAREN,
@@ -25,6 +26,7 @@ struct TOKEN {
   struct TOKEN *next;
 };
 
+struct TOKEN *token_next(const struct TOKEN *token);
 struct TOKEN *token_next_nonewhite(const struct TOKEN *token);
 struct TOKEN *lex(const char *code);
 struct AST *generate_ast(struct TOKEN *token);

@@ -17,7 +17,11 @@ int execute_binary(struct AST *ast, int input_fd) {
   argv[0] = program;
   int i = 1;
   for (; child; i++, child = child->next) {
-    argv[i] = child->val.string;
+    if (AST_ENVIRONMENT_VARIABLE == child->type) {
+      argv[i] = getenv(child->val.string);
+    } else {
+      argv[i] = child->val.string;
+    }
   }
   argv[i] = NULL;
 
