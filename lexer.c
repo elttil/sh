@@ -7,6 +7,16 @@
 #include <sys/types.h>
 #include <util.h>
 
+// Moves to the next token and skips any token between that is
+// whitespace
+struct TOKEN *token_next_nonewhite(const struct TOKEN *token) {
+  token = token->next;
+  for (; token && token->type == TOKEN_WHITESPACE;) {
+    token = token->next;
+  }
+  return (struct TOKEN *)token;
+}
+
 void free_tokens(struct TOKEN *token) {
   for (; token;) {
     struct TOKEN *old = token;
@@ -88,7 +98,23 @@ void skip_whitespace(const char **code_ptr) {
   *code_ptr = code;
 }
 
+int parse_whitespace(const char **code_ptr, struct TOKEN *cur) {
+  const char *code = *code_ptr;
+  if (!isspace(*code) || '\n' == *code) {
+    return 0;
+  }
+  code++;
+  cur->type = TOKEN_WHITESPACE;
+  strcpy(cur->string_rep, " ");
+  skip_whitespace(&code);
+  *code_ptr = code;
+  return 1;
+}
+
 int chars_to_token(const char **code_ptr, struct TOKEN *token) {
+  if (parse_whitespace(code_ptr, token)) {
+    return 1;
+  }
   if (parse_chars(code_ptr, token)) {
     return 1;
   }
@@ -102,7 +128,6 @@ struct TOKEN *lex(const char *code) {
   struct TOKEN *head = NULL;
   struct TOKEN *prev = NULL;
   for (; *code;) {
-    skip_whitespace(&code);
     if (!*code) {
       break;
     }

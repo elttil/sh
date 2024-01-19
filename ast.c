@@ -37,40 +37,40 @@ int parse_command(struct TOKEN **token_ptr, struct AST *cur) {
   cur->val.type = AST_VALUE_STRING;
   cur->val.string = token->string_rep;
   // Parse the arguments
-  if (token->next && TOKEN_CHARS == token->next->type) {
-    token = token->next;
+  if (token_next_nonewhite(token) && TOKEN_CHARS == token_next_nonewhite(token)->type) {
+    token = token_next_nonewhite(token);
     cur->children = allocate_ast();
     struct AST *child = cur->children;
     for (;;) {
       child->type = AST_EXPRESSION;
       child->val.type = AST_VALUE_STRING;
       child->val.string = token->string_rep;
-      if (!token->next) {
+      if (!token_next_nonewhite(token)) {
         break;
       }
-      if (TOKEN_CHARS != token->next->type) {
+      if (TOKEN_CHARS != token_next_nonewhite(token)->type) {
         break;
       }
-      token = token->next;
+      token = token_next_nonewhite(token);
       child->next = allocate_ast();
       child = child->next;
     }
   }
-  token = token->next;
+  token = token_next_nonewhite(token);
   // Parse the stream modifier "prog > file.txt"
   if (token &&
       (TOKEN_STREAM == token->type || TOKEN_STREAM_APPEND == token->type)) {
     cur->file_out_append = (TOKEN_STREAM_APPEND == token->type);
     // TODO: Allow it to be modified
     cur->file_out_fd_to_use = STDOUT_FILENO;
-    token = token->next;
+    token = token_next_nonewhite(token);
     cur->file_out = token->string_rep;
-    token = token->next;
+    token = token_next_nonewhite(token);
   }
   // Parse pipe '|'
   if (token && TOKEN_PIPE == token->type) {
     cur->pipe_rhs = allocate_ast();
-    token = token->next;
+    token = token_next_nonewhite(token);
     if (!parse_command(&token, cur->pipe_rhs)) {
       fprintf(stderr, "Expected command after |.");
       exit(1);
@@ -97,11 +97,11 @@ int parse_if_statement(struct TOKEN **token_ptr, struct AST *cur) {
 
   cur->type = AST_IF_STATEMENT;
 
-  token = token->next;
+  token = token_next_nonewhite(token);
   if (!token || TOKEN_OPEN_PAREN != token->type) {
     EXPECT_TOKEN("(");
   }
-  token = token->next;
+  token = token_next_nonewhite(token);
 
   cur->condition = allocate_ast();
   int rc = tokens_to_ast(&token, cur->condition);
@@ -113,11 +113,11 @@ int parse_if_statement(struct TOKEN **token_ptr, struct AST *cur) {
   if (!token || TOKEN_CLOSE_PAREN != token->type) {
     EXPECT_TOKEN(")");
   }
-  token = token->next;
+  token = token_next_nonewhite(token);
   if (!token || TOKEN_OPEN_BRACKET != token->type) {
     EXPECT_TOKEN("{");
   }
-  token = token->next;
+  token = token_next_nonewhite(token);
 
   cur->children = NULL;
   struct AST *previous = NULL;
@@ -130,7 +130,7 @@ int parse_if_statement(struct TOKEN **token_ptr, struct AST *cur) {
     }
 
     if (TOKEN_CLOSE_BRACKET == token->type) {
-      token = token->next;
+      token = token_next_nonewhite(token);
       break;
     }
 
@@ -163,12 +163,12 @@ int tokens_to_ast(struct TOKEN **token_ptr, struct AST *cur) {
   }
   if (TOKEN_AND == token->type) {
     cur->type = AST_CONDITIONAL_AND;
-    token = token->next;
+    token = token_next_nonewhite(token);
     goto tokens_to_ast_success;
   }
   if (TOKEN_NOT == token->type) {
     cur->type = AST_CONDITIONAL_NOT;
-    token = token->next;
+    token = token_next_nonewhite(token);
     goto tokens_to_ast_success;
   }
   // Semicolon and newlines are treated as a conditional such as && and
@@ -177,7 +177,7 @@ int tokens_to_ast(struct TOKEN **token_ptr, struct AST *cur) {
   // does.
   if (TOKEN_SEMICOLON == token->type || TOKEN_NEWLINE == token->type) {
     cur->type = AST_NOOP;
-    token = token->next;
+    token = token_next_nonewhite(token);
     goto tokens_to_ast_success;
   }
   return 0;

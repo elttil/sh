@@ -3,6 +3,7 @@
 #include <stddef.h>
 
 typedef enum {
+  TOKEN_WHITESPACE,
   TOKEN_CHARS,
   TOKEN_AND,
   TOKEN_NOT,
@@ -24,6 +25,7 @@ struct TOKEN {
   struct TOKEN *next;
 };
 
+struct TOKEN *token_next_nonewhite(const struct TOKEN *token);
 struct TOKEN *lex(const char *code);
 struct AST *generate_ast(struct TOKEN *token);
 void free_tokens(struct TOKEN *token);
