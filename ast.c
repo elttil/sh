@@ -8,16 +8,11 @@
 
 int tokens_to_ast(struct TOKEN **token_ptr, struct AST *cur);
 
-void free_ast_command(struct AST *ast) {
-  free_ast(ast->children);
-  free_ast(ast->pipe_rhs);
-}
-
 void free_ast(struct AST *ast) {
   for (; ast;) {
-    if (AST_COMMAND == ast->type) {
-      free_ast_command(ast);
-    }
+    free_ast(ast->children);
+    free_ast(ast->pipe_rhs);
+    free_ast(ast->condition);
     struct AST *old = ast;
     ast = ast->next;
     free(old);
