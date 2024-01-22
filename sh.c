@@ -29,7 +29,10 @@ int execute_binary(struct AST *ast, int input_fd) {
   int out = STDOUT_FILENO;
   int slave_input = -1;
 
-  int file_out_fd;
+  // NOTE: GCC complains that file_out_fd "may be used uninitialized"
+  // even tough this is not possible so it is just set to a default
+  // value.
+  int file_out_fd = -1;
   if (ast->file_out) {
     file_out_fd =
         open(ast->file_out,
